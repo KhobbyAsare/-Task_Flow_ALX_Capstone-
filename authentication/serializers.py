@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth import authenticate
+from .models import UserProfile
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -106,9 +107,109 @@ class EmailLoginSerializer(serializers.Serializer):
             )
 
 
+class ExtendedUserProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the extended UserProfile model
+    """
+    class Meta:
+        model = UserProfile
+        fields = ('bio', 'phone_number', 'birth_date', 'location', 'website', 
+                 'profile_picture', 'is_profile_public', 'show_email')
+
+
+class UserDataSerializer(serializers.ModelSerializer):
+    """
+    Serializer for getting complete user data (read-only)
+    """
+    profile = ExtendedUserProfileSerializer(read_only=True)
+    full_name = serializers.SerializerMethodField()
+    profile_picture_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 
+                 'date_joined', 'last_login', 'is_active', 'full_name', 
+                 'profile_picture_url', 'profile')
+        read_only_fields = ('id', 'username', 'date_joined', 'last_login', 
+                          'is_active', 'full_name', 'profile_picture_url')
+    
+    def get_full_name(self, obj):
+        """Get user's full name"""
+        return f"{obj.first_name} {obj.last_name}".strip()
+    
+    def get_profile_picture_url(self, obj):
+        """Get profile picture URL"""
+        if hasattr(obj, 'profile') and obj.profile.profile_picture:
+            return obj.profile.profile_picture.url
+        return '/static/images/default-avatar.png'
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating user basic information
+    """
+    email = serializers.EmailField(required=False)
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
+    
+    # Profile fields
+    bio = serializers.CharField(max_length=500, required=False, allow_blank=True)
+    phone_number = serializers.CharField(max_length=15, required=False, allow_blank=True)
+    birth_date = serializers.DateField(required=False, allow_null=True)
+    location = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    website = serializers.URLField(required=False, allow_blank=True)
+    profile_picture = serializers.ImageField(required=False, allow_null=True)
+    is_profile_public = serializers.BooleanField(required=False)
+    show_email = serializers.BooleanField(required=False)
+    
+    class Meta:
+        model = User
+        fields = ('email', 'first_name', 'last_name', 'bio', 'phone_number', 
+                 'birth_date', 'location', 'website', 'profile_picture', 
+                 'is_profile_public', 'show_email')
+    
+    def validate_email(self, value):
+        """Validate email uniqueness (excluding current user)"""
+        user = self.instance
+        if User.objects.filter(email=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError(
+                "A user with this email already exists."
+            )
+        return value
+    
+    def update(self, instance, validated_data):
+        """Update user and profile information"""
+        # Extract profile fields
+        profile_fields = {
+            'bio': validated_data.pop('bio', None),
+            'phone_number': validated_data.pop('phone_number', None),
+            'birth_date': validated_data.pop('birth_date', None),
+            'location': validated_data.pop('location', None),
+            'website': validated_data.pop('website', None),
+            'profile_picture': validated_data.pop('profile_picture', None),
+            'is_profile_public': validated_data.pop('is_profile_public', None),
+            'show_email': validated_data.pop('show_email', None),
+        }
+        
+        # Update user fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Update profile fields
+        if hasattr(instance, 'profile'):
+            profile = instance.profile
+            for attr, value in profile_fields.items():
+                if value is not None:
+                    setattr(profile, attr, value)
+            profile.save()
+        
+        return instance
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     """
-    Serializer for user profile (read-only)
+    Serializer for user profile (backward compatibility)
     """
     class Meta:
         model = User

@@ -1,5 +1,12 @@
 from django.urls import path
-from .views import UserRegistrationView, UserProfileView, EmailLoginView, LogoutView
+from .views import (
+    UserRegistrationView, 
+    UserProfileView, 
+    EmailLoginView, 
+    LogoutView,
+    UserDataView,
+    UserUpdateView
+)
 
 urlpatterns = [
     # User registration
@@ -11,6 +18,13 @@ urlpatterns = [
     # User logout
     path('logout/', LogoutView.as_view(), name='user-logout'),
     
-    # User profile
+    # User profile (legacy endpoint for backward compatibility)
     path('profile/', UserProfileView.as_view(), name='user-profile'),
+    
+    # New dedicated endpoints
+    # Get complete user data
+    path('user-data/', UserDataView.as_view(), name='user-data'),
+    
+    # Update user data
+    path('user-update/', UserUpdateView.as_view(), name='user-update'),
 ]

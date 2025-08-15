@@ -4,7 +4,13 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
-from .serializers import UserRegistrationSerializer, UserProfileSerializer, EmailLoginSerializer
+from .serializers import (
+    UserRegistrationSerializer, 
+    UserProfileSerializer, 
+    EmailLoginSerializer,
+    UserDataSerializer,
+    UserUpdateSerializer
+)
 
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -84,6 +90,59 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     
     def get_object(self):
         return self.request.user
+
+
+class UserDataView(generics.RetrieveAPIView):
+    """
+    API endpoint to get complete user data
+    GET /auth/user-data/
+    """
+    serializer_class = UserDataSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response({
+            'message': 'User data retrieved successfully',
+            'data': serializer.data
+        }, status=status.HTTP_200_OK)
+
+
+class UserUpdateView(generics.UpdateAPIView):
+    """
+    API endpoint to update user data
+    PUT/PATCH /auth/user-update/
+    """
+    serializer_class = UserUpdateSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        
+        # Perform the update
+        self.perform_update(serializer)
+        
+        # Return updated user data
+        updated_user_serializer = UserDataSerializer(instance)
+        
+        return Response({
+            'message': 'User data updated successfully',
+            'data': updated_user_serializer.data
+        }, status=status.HTTP_200_OK)
+    
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
 
 
 class LogoutView(APIView):
