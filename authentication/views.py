@@ -1,6 +1,6 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
@@ -84,3 +84,35 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     
     def get_object(self):
         return self.request.user
+
+
+class LogoutView(APIView):
+    """
+    API endpoint for user logout
+    Deletes the user's authentication token
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            # Get the user's token and delete it
+            token = Token.objects.get(user=request.user)
+            token.delete()
+            
+            return Response({
+                'message': 'Logout successful'
+            }, status=status.HTTP_200_OK)
+            
+        except Token.DoesNotExist:
+            return Response({
+                'message': 'User was already logged out'
+            }, status=status.HTTP_200_OK)
+    
+    def get(self, request, *args, **kwargs):
+        """
+        Display logout information in browsable API
+        """
+        return Response({
+            'message': 'Send a POST request to this endpoint to logout',
+            'user': request.user.username if request.user.is_authenticated else 'Anonymous'
+        })
