@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.validators import UniqueValidator
+from django.contrib.auth import authenticate
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -62,6 +63,47 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
+
+
+class EmailLoginSerializer(serializers.Serializer):
+    """
+    Serializer for email-based login
+    """
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        if email and password:
+            # Try to find user by email
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                raise serializers.ValidationError(
+                    'No account found with this email address.'
+                )
+            
+            # Authenticate using username (since Django's authenticate expects username)
+            user = authenticate(username=user.username, password=password)
+            
+            if not user:
+                raise serializers.ValidationError(
+                    'Invalid email or password.'
+                )
+            
+            if not user.is_active:
+                raise serializers.ValidationError(
+                    'User account is disabled.'
+                )
+            
+            attrs['user'] = user
+            return attrs
+        else:
+            raise serializers.ValidationError(
+                'Must include email and password.'
+            )
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
