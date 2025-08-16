@@ -18,10 +18,9 @@ urlpatterns = [
     # User logout
     path('logout/', LogoutView.as_view(), name='user-logout'),
     
-    # User profile (legacy endpoint for backward compatibility)
+    # User profile
     path('profile/', UserProfileView.as_view(), name='user-profile'),
     
-    # New dedicated endpoints
     # Get complete user data
     path('user-data/', UserDataView.as_view(), name='user-data'),
     
