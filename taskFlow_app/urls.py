@@ -22,6 +22,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('authentication.urls')),
+    path('api/tasks/', include('task.urls')),
     path('api/', include('rest_framework.urls')),  # DRF browsable API
 ]
 
