@@ -3,6 +3,48 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 
+class Category(models.Model):
+    """
+    Custom category model for user-defined task categories
+    """
+    name = models.CharField(max_length=50, help_text="Category name")
+    color = models.CharField(
+        max_length=7, 
+        blank=True, 
+        null=True, 
+        help_text="Color code for category (hex format)",
+        default="#007BFF"
+    )
+    description = models.TextField(blank=True, null=True, help_text="Category description")
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='custom_categories',
+        help_text="User who created this category"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Custom Category'
+        verbose_name_plural = 'Custom Categories'
+        # Ensure user cannot create duplicate category names
+        unique_together = ['name', 'user']
+        ordering = ['name']
+    
+    def __str__(self):
+        return f"{self.name} - {self.user.username}"
+    
+    def clean(self):
+        # Convert name to title case for consistency
+        if self.name:
+            self.name = self.name.title()
+    
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+
 class Task(models.Model):
     """
     Task model for task management system
@@ -16,6 +58,7 @@ class Task(models.Model):
     CATEGORY_CHOICES = [
         ('WORK', 'Work'),
         ('PERSONAL', 'Personal'),
+        ('FITNESS', 'Fitness'),
         ('SHOPPING', 'Shopping'),
         ('HEALTH', 'Health'),
         ('EDUCATION', 'Education'),
@@ -32,11 +75,21 @@ class Task(models.Model):
         default='MEDIUM',
         help_text="Task priority level"
     )
+    # Default system category (optional)
     category = models.CharField(
         max_length=15,
         choices=CATEGORY_CHOICES,
-        default='OTHER',
-        help_text="Task category"
+        blank=True,
+        null=True,
+        help_text="Default system category"
+    )
+    # Custom user category (optional)
+    custom_category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        help_text="Custom user-defined category"
     )
     is_completed = models.BooleanField(default=False, help_text="Task completion status")
     user = models.ForeignKey(
@@ -79,3 +132,31 @@ class Task(models.Model):
             delta = self.due_date - timezone.now()
             return delta.days
         return None
+    
+    @property
+    def effective_category(self):
+        """Get the effective category (custom takes precedence over default)"""
+        if self.custom_category:
+            return {
+                'type': 'custom',
+                'id': self.custom_category.id,
+                'name': self.custom_category.name,
+                'color': self.custom_category.color
+            }
+        elif self.category:
+            return {
+                'type': 'default',
+                'code': self.category,
+                'name': dict(self.CATEGORY_CHOICES).get(self.category, self.category)
+            }
+        else:
+            return {
+                'type': 'default',
+                'code': 'OTHER',
+                'name': 'Other'
+            }
+    
+    def clean(self):
+        # Ensure at least one category is set (default or custom)
+        if not self.category and not self.custom_category:
+            self.category = 'OTHER'
