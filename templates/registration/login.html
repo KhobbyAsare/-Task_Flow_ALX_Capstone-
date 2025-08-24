@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Task Flow{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow">
+            <div class="card-header text-center">
+                <h3 class="mb-0">
+                    <i class="bi bi-box-arrow-in-right"></i> Login to Task Flow
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                {% if field == '__all__' %}
+                                    {{ error }}
+                                {% else %}
+                                    <strong>{{ field|title }}:</strong> {{ error }}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" id="loginForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="bi bi-person"></i> Username
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="{{ form.username.id_for_label }}" 
+                               name="{{ form.username.name }}"
+                               value="{{ form.username.value|default:'' }}"
+                               placeholder="Enter your username"
+                               required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                            <i class="bi bi-lock"></i> Password
+                        </label>
+                        <div class="input-group">
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="{{ form.password.id_for_label }}" 
+                                   name="{{ form.password.name }}"
+                                   placeholder="Enter your password"
+                                   required>
+                            <button class="btn btn-outline-secondary" 
+                                    type="button" 
+                                    id="togglePassword">
+                                <i class="bi bi-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="rememberMe" name="remember_me">
+                        <label class="form-check-label" for="rememberMe">
+                            Remember me
+                        </label>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </button>
+                    </div>
+                </form>
+
+                <hr>
+                
+                <div class="text-center">
+                    <p class="mb-2">
+                        <a href="{% url 'password_reset' %}" class="text-decoration-none">
+                            <i class="bi bi-key"></i> Forgot your password?
+                        </a>
+                    </p>
+                    <p class="mb-0">
+                        Don't have an account? 
+                        <a href="/auth/register/" class="text-decoration-none">
+                            <i class="bi bi-person-plus"></i> Sign up here
+                        </a>
+                    </p>
+                </div>
+            </div>
+            <div class="card-footer text-center text-muted">
+                <small>Welcome back to Task Flow!</small>
+            </div>
+        </div>
+
+        <!-- Demo Credentials Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0 text-center">
+                    <i class="bi bi-info-circle"></i> Demo Account
+                </h6>
+            </div>
+            <div class="card-body text-center">
+                <p class="card-text small">
+                    Want to try Task Flow? Use these demo credentials:
+                </p>
+                <div class="row">
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-primary btn-sm w-100" 
+                                onclick="fillDemo('demo', 'demo123')">
+                            Demo User
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-secondary btn-sm w-100" 
+                                onclick="fillDemo('admin', 'admin123')">
+                            Admin User
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Password visibility toggle
+    $('#togglePassword').on('click', function() {
+        const passwordField = $('#{{ form.password.id_for_label }}');
+        const toggleIcon = $('#toggleIcon');
+        
+        if (passwordField.attr('type') === 'password') {
+            passwordField.attr('type', 'text');
+            toggleIcon.removeClass('bi-eye').addClass('bi-eye-slash');
+        } else {
+            passwordField.attr('type', 'password');
+            toggleIcon.removeClass('bi-eye-slash').addClass('bi-eye');
+        }
+    });
+
+    // Form validation
+    $('#loginForm').on('submit', function(e) {
+        const username = $('#{{ form.username.id_for_label }}').val().trim();
+        const password = $('#{{ form.password.id_for_label }}').val();
+        
+        if (!username) {
+            e.preventDefault();
+            alert('Please enter your username.');
+            $('#{{ form.username.id_for_label }}').focus();
+            return false;
+        }
+        
+        if (!password) {
+            e.preventDefault();
+            alert('Please enter your password.');
+            $('#{{ form.password.id_for_label }}').focus();
+            return false;
+        }
+        
+        // Show loading state
+        const submitButton = $(this).find('button[type="submit"]');
+        submitButton.prop('disabled', true);
+        submitButton.html('<i class="bi bi-hourglass-split"></i> Logging in...');
+    });
+
+    // Auto-focus on username field
+    $('#{{ form.username.id_for_label }}').focus();
+
+    // Handle enter key in password field
+    $('#{{ form.password.id_for_label }}').on('keypress', function(e) {
+        if (e.which === 13) {
+            $('#loginForm').submit();
+        }
+    });
+});
+
+// Demo credentials function
+function fillDemo(username, password) {
+    $('#{{ form.username.id_for_label }}').val(username);
+    $('#{{ form.password.id_for_label }}').val(password);
+    
+    // Optional: Auto-submit for demo
+    if (confirm('Login with ' + username + ' credentials?')) {
+        $('#loginForm').submit();
+    }
+}
+
+// Clear form data on page load if needed
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        document.getElementById('loginForm').reset();
+    }
+});
+</script>
+{% endblock %}

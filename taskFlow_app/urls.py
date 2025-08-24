@@ -18,12 +18,23 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from task.dashboard_views import register_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/', include('authentication.urls')),
-    path('api/tasks/', include('task.urls')),
+    
+    # Web interface URLs
+    path('', include(('task.urls', 'task'), namespace='web')),  # Dashboard and web views
+    path('auth/', include(('authentication.urls', 'auth'), namespace='web_auth')),  # Authentication
+    
+    # API URLs (existing)
+    path('api/auth/', include(('authentication.urls', 'auth'), namespace='api_auth')),
+    path('api/tasks/', include(('task.urls', 'task'), namespace='api')),
     path('api/', include('rest_framework.urls')),  # DRF browsable API
+    
+    # Django built-in authentication for web views
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/register/', register_view, name='register'),
 ]
 
 # Serve media files during development

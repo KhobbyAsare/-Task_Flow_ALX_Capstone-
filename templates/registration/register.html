@@ -1,0 +1,377 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Task Flow{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header text-center">
+                <h3 class="mb-0">
+                    <i class="bi bi-person-plus"></i> Join Task Flow
+                </h3>
+                <small class="text-muted">Create your account and start organizing your tasks</small>
+            </div>
+            <div class="card-body">
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>Please correct the following errors:</strong>
+                        <ul class="mb-0 mt-2">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <li>
+                                        {% if field != '__all__' %}
+                                            <strong>{{ field|title }}:</strong> 
+                                        {% endif %}
+                                        {{ error }}
+                                    </li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <form method="post" id="registerForm">
+                    {% csrf_token %}
+                    
+                    <!-- Name Fields -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                    <i class="bi bi-person"></i> First Name <span class="text-danger">*</span>
+                                </label>
+                                {{ form.first_name }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                    <i class="bi bi-person"></i> Last Name <span class="text-danger">*</span>
+                                </label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Username Field -->
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="bi bi-at"></i> Username <span class="text-danger">*</span>
+                        </label>
+                        {{ form.username }}
+                        <div class="form-text">
+                            Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+                        </div>
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            <i class="bi bi-envelope"></i> Email Address <span class="text-danger">*</span>
+                        </label>
+                        {{ form.email }}
+                        <div class="form-text">
+                            We'll use this to send you important updates about your tasks.
+                        </div>
+                    </div>
+
+                    <!-- Password Fields -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.password1.id_for_label }}" class="form-label">
+                                    <i class="bi bi-lock"></i> Password <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    {{ form.password1 }}
+                                    <button class="btn btn-outline-secondary" 
+                                            type="button" 
+                                            id="togglePassword1">
+                                        <i class="bi bi-eye" id="toggleIcon1"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text" id="passwordHelp">
+                                    Your password must contain at least 8 characters.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.password2.id_for_label }}" class="form-label">
+                                    <i class="bi bi-lock-fill"></i> Confirm Password <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    {{ form.password2 }}
+                                    <button class="btn btn-outline-secondary" 
+                                            type="button" 
+                                            id="togglePassword2">
+                                        <i class="bi bi-eye" id="toggleIcon2"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    Enter the same password as before, for verification.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password Strength Indicator -->
+                    <div class="mb-3">
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar" role="progressbar" id="passwordStrength" 
+                                 style="width: 0%"></div>
+                        </div>
+                        <div class="form-text" id="passwordFeedback"></div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="acceptTerms" required>
+                        <label class="form-check-label" for="acceptTerms">
+                            I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> 
+                            and <a href="#" class="text-decoration-none">Privacy Policy</a> 
+                            <span class="text-danger">*</span>
+                        </label>
+                    </div>
+
+                    <!-- Marketing Emails -->
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" class="form-check-input" id="emailUpdates" checked>
+                        <label class="form-check-label" for="emailUpdates">
+                            I'd like to receive email updates about new features and tips
+                        </label>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-plus"></i> Create Account
+                        </button>
+                    </div>
+                </form>
+
+                <hr>
+                
+                <div class="text-center">
+                    <p class="mb-0">
+                        Already have an account? 
+                        <a href="/accounts/login/" class="text-decoration-none">
+                            <i class="bi bi-box-arrow-in-right"></i> Login here
+                        </a>
+                    </p>
+                </div>
+            </div>
+            <div class="card-footer text-center text-muted">
+                <small>Welcome to the future of task management!</small>
+            </div>
+        </div>
+
+        <!-- Benefits Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0 text-center">
+                    <i class="bi bi-star"></i> Why Join Task Flow?
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3">
+                        <i class="bi bi-lightning text-primary fs-3"></i>
+                        <h6 class="mt-2">Fast & Efficient</h6>
+                        <small class="text-muted">Create and organize tasks in seconds</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <i class="bi bi-calendar3 text-success fs-3"></i>
+                        <h6 class="mt-2">Smart Calendar</h6>
+                        <small class="text-muted">Visual timeline of all your tasks</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <i class="bi bi-shield-check text-info fs-3"></i>
+                        <h6 class="mt-2">Secure & Private</h6>
+                        <small class="text-muted">Your data is safe and encrypted</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Password visibility toggles
+    $('#togglePassword1').on('click', function() {
+        const passwordField = $('#{{ form.password1.id_for_label }}');
+        const toggleIcon = $('#toggleIcon1');
+        
+        if (passwordField.attr('type') === 'password') {
+            passwordField.attr('type', 'text');
+            toggleIcon.removeClass('bi-eye').addClass('bi-eye-slash');
+        } else {
+            passwordField.attr('type', 'password');
+            toggleIcon.removeClass('bi-eye-slash').addClass('bi-eye');
+        }
+    });
+
+    $('#togglePassword2').on('click', function() {
+        const passwordField = $('#{{ form.password2.id_for_label }}');
+        const toggleIcon = $('#toggleIcon2');
+        
+        if (passwordField.attr('type') === 'password') {
+            passwordField.attr('type', 'text');
+            toggleIcon.removeClass('bi-eye').addClass('bi-eye-slash');
+        } else {
+            passwordField.attr('type', 'password');
+            toggleIcon.removeClass('bi-eye-slash').addClass('bi-eye');
+        }
+    });
+
+    // Password strength checker
+    $('#{{ form.password1.id_for_label }}').on('input', function() {
+        const password = $(this).val();
+        const strength = checkPasswordStrength(password);
+        updatePasswordStrengthUI(strength);
+    });
+
+    // Password match checker
+    $('#{{ form.password2.id_for_label }}').on('input', function() {
+        const password1 = $('#{{ form.password1.id_for_label }}').val();
+        const password2 = $(this).val();
+        
+        if (password2 && password1 !== password2) {
+            $(this).addClass('is-invalid');
+            $(this).removeClass('is-valid');
+        } else if (password2) {
+            $(this).removeClass('is-invalid');
+            $(this).addClass('is-valid');
+        }
+    });
+
+    // Form validation
+    $('#registerForm').on('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Show loading state
+        const submitButton = $(this).find('button[type="submit"]');
+        submitButton.prop('disabled', true);
+        submitButton.html('<i class="bi bi-hourglass-split"></i> Creating Account...');
+    });
+
+    // Auto-focus on first name field
+    $('#{{ form.first_name.id_for_label }}').focus();
+});
+
+function checkPasswordStrength(password) {
+    let score = 0;
+    if (!password) return score;
+    
+    // Length check
+    if (password.length >= 8) score += 1;
+    if (password.length >= 12) score += 1;
+    
+    // Character variety checks
+    if (/[a-z]/.test(password)) score += 1;
+    if (/[A-Z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+    
+    return score;
+}
+
+function updatePasswordStrengthUI(strength) {
+    const progressBar = $('#passwordStrength');
+    const feedback = $('#passwordFeedback');
+    
+    const colors = ['bg-danger', 'bg-warning', 'bg-info', 'bg-success'];
+    const messages = [
+        'Very weak password',
+        'Weak password',
+        'Fair password', 
+        'Good password',
+        'Strong password',
+        'Very strong password'
+    ];
+    
+    // Remove all color classes
+    progressBar.removeClass('bg-danger bg-warning bg-info bg-success');
+    
+    if (strength === 0) {
+        progressBar.css('width', '0%');
+        feedback.text('');
+    } else {
+        const percentage = (strength / 6) * 100;
+        progressBar.css('width', percentage + '%');
+        
+        if (strength <= 2) {
+            progressBar.addClass('bg-danger');
+        } else if (strength <= 3) {
+            progressBar.addClass('bg-warning');
+        } else if (strength <= 4) {
+            progressBar.addClass('bg-info');
+        } else {
+            progressBar.addClass('bg-success');
+        }
+        
+        feedback.text(messages[strength] || messages[5]);
+    }
+}
+
+function validateForm() {
+    const firstName = $('#{{ form.first_name.id_for_label }}').val().trim();
+    const lastName = $('#{{ form.last_name.id_for_label }}').val().trim();
+    const username = $('#{{ form.username.id_for_label }}').val().trim();
+    const email = $('#{{ form.email.id_for_label }}').val().trim();
+    const password1 = $('#{{ form.password1.id_for_label }}').val();
+    const password2 = $('#{{ form.password2.id_for_label }}').val();
+    const acceptTerms = $('#acceptTerms').prop('checked');
+    
+    if (!firstName) {
+        alert('Please enter your first name.');
+        $('#{{ form.first_name.id_for_label }}').focus();
+        return false;
+    }
+    
+    if (!lastName) {
+        alert('Please enter your last name.');
+        $('#{{ form.last_name.id_for_label }}').focus();
+        return false;
+    }
+    
+    if (!username) {
+        alert('Please choose a username.');
+        $('#{{ form.username.id_for_label }}').focus();
+        return false;
+    }
+    
+    if (!email) {
+        alert('Please enter your email address.');
+        $('#{{ form.email.id_for_label }}').focus();
+        return false;
+    }
+    
+    if (!password1) {
+        alert('Please enter a password.');
+        $('#{{ form.password1.id_for_label }}').focus();
+        return false;
+    }
+    
+    if (password1 !== password2) {
+        alert('Passwords do not match.');
+        $('#{{ form.password2.id_for_label }}').focus();
+        return false;
+    }
+    
+    if (!acceptTerms) {
+        alert('Please accept the Terms of Service and Privacy Policy to continue.');
+        $('#acceptTerms').focus();
+        return false;
+    }
+    
+    return true;
+}
+</script>
+{% endblock %}

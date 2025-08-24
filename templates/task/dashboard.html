@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }} - Task Flow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-speedometer2"></i> Dashboard</h1>
+    <a href="{% url 'web:web_task_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> New Task
+    </a>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-list-task fs-1 mb-2"></i>
+                <h3 class="card-title">{{ stats.total_tasks }}</h3>
+                <p class="card-text">Total Tasks</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-check-circle fs-1 mb-2"></i>
+                <h3 class="card-title">{{ stats.completed_tasks }}</h3>
+                <p class="card-text">Completed</p>
+                <small>{{ stats.completion_rate }}% completion rate</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-clock fs-1 mb-2"></i>
+                <h3 class="card-title">{{ stats.pending_tasks }}</h3>
+                <p class="card-text">Pending</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-danger text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-exclamation-triangle fs-1 mb-2"></i>
+                <h3 class="card-title">{{ stats.overdue_tasks }}</h3>
+                <p class="card-text">Overdue</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats Row -->
+<div class="row mb-4">
+    <div class="col-md-2 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="text-danger">{{ stats.high_priority }}</h5>
+                <small class="text-muted">High Priority</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="text-warning">{{ stats.medium_priority }}</h5>
+                <small class="text-muted">Medium Priority</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="text-info">{{ stats.low_priority }}</h5>
+                <small class="text-muted">Low Priority</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="text-primary">{{ stats.due_today }}</h5>
+                <small class="text-muted">Due Today</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="text-success">{{ stats.recent_completed }}</h5>
+                <small class="text-muted">Completed This Week</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="text-secondary">{{ stats.recent_created }}</h5>
+                <small class="text-muted">Created This Week</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Tasks -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Tasks</h5>
+                <a href="{% url 'web:web_task_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_tasks %}
+                    <div class="list-group list-group-flush">
+                        {% for task in recent_tasks %}
+                        <div class="list-group-item d-flex justify-content-between align-items-start {% if task.is_completed %}task-completed{% endif %} {% if task.is_overdue and not task.is_completed %}overdue{% endif %}">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">{{ task.title }}</div>
+                                <small class="text-muted">
+                                    {% if task.due_date %}
+                                        Due: {{ task.due_date|date:"M d, Y" }}
+                                    {% endif %}
+                                    • {{ task.get_category_display }}
+                                </small>
+                            </div>
+                            <div>
+                                {% if task.priority == 'HIGH' %}
+                                    <span class="badge bg-danger">{{ task.get_priority_display }}</span>
+                                {% elif task.priority == 'MEDIUM' %}
+                                    <span class="badge bg-warning">{{ task.get_priority_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-info">{{ task.get_priority_display }}</span>
+                                {% endif %}
+                                
+                                {% if task.is_completed %}
+                                    <i class="bi bi-check-circle text-success ms-2"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No tasks found. <a href="{% url 'web:web_task_create' %}">Create your first task</a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Urgent Tasks -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle text-danger"></i> Urgent Tasks</h5>
+                <a href="{% url 'web:web_task_list' %}?priority=high" class="btn btn-sm btn-outline-danger">View All</a>
+            </div>
+            <div class="card-body">
+                {% if urgent_tasks %}
+                    <div class="list-group list-group-flush">
+                        {% for task in urgent_tasks %}
+                        <div class="list-group-item d-flex justify-content-between align-items-start priority-{{ task.priority|lower }} {% if task.is_overdue %}overdue{% endif %}">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">{{ task.title }}</div>
+                                <small class="text-muted">
+                                    {% if task.due_date %}
+                                        Due: {{ task.due_date|date:"M d, Y" }}
+                                        {% if task.is_overdue %}
+                                            <span class="text-danger">(Overdue)</span>
+                                        {% endif %}
+                                    {% endif %}
+                                    • {{ task.get_category_display }}
+                                </small>
+                            </div>
+                            <div>
+                                <span class="badge bg-danger">{{ task.get_priority_display }}</span>
+                                <button class="btn btn-sm btn-outline-success ms-2" onclick="toggleTaskComplete({{ task.id }})">
+                                    <i class="bi bi-check"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No urgent tasks. Great job! 🎉</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Categories Overview -->
+{% if category_stats %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Tasks by Category</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for category in category_stats %}
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">{{ category.name }}</h6>
+                                <div class="d-flex justify-content-around">
+                                    <div>
+                                        <strong>{{ category.count }}</strong>
+                                        <br><small class="text-muted">Total</small>
+                                    </div>
+                                    <div>
+                                        <strong class="text-success">{{ category.completed }}</strong>
+                                        <br><small class="text-muted">Done</small>
+                                    </div>
+                                </div>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {% if category.count > 0 %}{{ category.completed|floatformat:0 }}{% endif %}%">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="btn-group" role="group">
+                    <a href="{% url 'web:web_task_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Create Task
+                    </a>
+                    <a href="{% url 'web:web_task_list' %}?status=pending" class="btn btn-warning">
+                        <i class="bi bi-clock"></i> View Pending
+                    </a>
+                    <a href="{% url 'web:web_task_list' %}?status=overdue" class="btn btn-danger">
+                        <i class="bi bi-exclamation-triangle"></i> View Overdue
+                    </a>
+                    <a href="{% url 'web:web_task_calendar' %}" class="btn btn-info">
+                        <i class="bi bi-calendar3"></i> Calendar View
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleTaskComplete(taskId) {
+    axios.post(`/tasks/${taskId}/toggle/`, {}, {
+        headers: {
+            'X-CSRFToken': csrftoken
+        }
+    })
+    .then(function (response) {
+        if (response.data.success) {
+            location.reload(); // Refresh the page to show updated status
+        }
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+        alert('Error updating task status');
+    });
+}
+
+// Auto-refresh dashboard every 5 minutes
+setInterval(function() {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}

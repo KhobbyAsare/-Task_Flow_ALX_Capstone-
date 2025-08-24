@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Task - Task Flow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-plus-circle"></i> Create New Task</h1>
+    <a href="/web/tasks/" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Tasks
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pencil"></i> Task Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="taskForm">
+                    {% csrf_token %}
+                    
+                    <!-- Title Field -->
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">
+                            {{ form.title.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.help_text %}
+                            <div class="form-text">{{ form.title.help_text }}</div>
+                        {% endif %}
+                        {% if form.title.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.title.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description Field -->
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            {{ form.description.label }}
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.help_text %}
+                            <div class="form-text">{{ form.description.help_text }}</div>
+                        {% endif %}
+                        {% if form.description.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Priority and Category Row -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.priority.id_for_label }}" class="form-label">
+                                    {{ form.priority.label }}
+                                </label>
+                                {{ form.priority }}
+                                {% if form.priority.help_text %}
+                                    <div class="form-text">{{ form.priority.help_text }}</div>
+                                {% endif %}
+                                {% if form.priority.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.priority.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.category.id_for_label }}" class="form-label">
+                                    {{ form.category.label }}
+                                </label>
+                                {{ form.category }}
+                                {% if form.category.help_text %}
+                                    <div class="form-text">{{ form.category.help_text }}</div>
+                                {% endif %}
+                                {% if form.category.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.category.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Due Date Row -->
+                    <div class="mb-3">
+                        <label for="{{ form.due_date.id_for_label }}" class="form-label">
+                            {{ form.due_date.label }}
+                        </label>
+                        {{ form.due_date }}
+                        {% if form.due_date.help_text %}
+                            <div class="form-text">{{ form.due_date.help_text }}</div>
+                        {% endif %}
+                        {% if form.due_date.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.due_date.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Form Errors -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <a href="/web/tasks/" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                        <div>
+                            <button type="submit" name="save_and_continue" class="btn btn-outline-primary me-2">
+                                <i class="bi bi-plus-circle"></i> Save & Add Another
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Create Task
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Task Creation Tips -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Tips for Creating Effective Tasks</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Title Best Practices:</h6>
+                        <ul class="small">
+                            <li>Use action verbs (e.g., "Complete", "Review", "Call")</li>
+                            <li>Be specific and clear</li>
+                            <li>Keep it under 50 characters when possible</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Priority Guidelines:</h6>
+                        <ul class="small">
+                            <li><strong>High:</strong> Urgent and important tasks</li>
+                            <li><strong>Medium:</strong> Important but not urgent</li>
+                            <li><strong>Low:</strong> Nice to have, when time allows</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6 class="text-primary">Categories:</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <span class="badge bg-primary me-1">Work</span> Professional tasks<br>
+                                <span class="badge bg-info me-1">Personal</span> Personal life tasks<br>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="badge bg-success me-1">Health</span> Health & fitness<br>
+                                <span class="badge bg-warning me-1">Finance</span> Money matters<br>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="badge bg-purple me-1">Education</span> Learning goals<br>
+                                <span class="badge bg-secondary me-1">Other</span> Everything else<br>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Form validation
+    $('#taskForm').on('submit', function(e) {
+        const title = $('#{{ form.title.id_for_label }}').val().trim();
+        
+        if (title.length < 3) {
+            e.preventDefault();
+            alert('Task title must be at least 3 characters long.');
+            $('#{{ form.title.id_for_label }}').focus();
+            return false;
+        }
+        
+        // Show loading state
+        const submitButtons = $(this).find('button[type="submit"]');
+        submitButtons.prop('disabled', true);
+        submitButtons.html('<i class="bi bi-hourglass-split"></i> Creating...');
+        
+        // Re-enable buttons after 5 seconds in case of error
+        setTimeout(function() {
+            submitButtons.prop('disabled', false);
+            submitButtons.html('<i class="bi bi-check-circle"></i> Create Task');
+        }, 5000);
+    });
+    
+    // Auto-focus on title field
+    $('#{{ form.title.id_for_label }}').focus();
+    
+    // Character counter for title
+    $('#{{ form.title.id_for_label }}').on('input', function() {
+        const length = $(this).val().length;
+        const maxLength = 200;
+        const remaining = maxLength - length;
+        
+        let counterHtml = `<small class="text-muted">${length}/${maxLength} characters`;
+        if (remaining < 20) {
+            counterHtml = `<small class="text-warning">${length}/${maxLength} characters`;
+        }
+        if (remaining < 0) {
+            counterHtml = `<small class="text-danger">${length}/${maxLength} characters - Too long!`;
+        }
+        counterHtml += '</small>';
+        
+        // Remove existing counter and add new one
+        $(this).siblings('.char-counter').remove();
+        $(this).after(`<div class="char-counter">${counterHtml}</div>`);
+    });
+});
+</script>
+{% endblock %}
