@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ task.title }} - Task Details - Task Flow{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-eye"></i> Task Details</h1>
+    <div>
+        <a href="{% url 'web:web_task_edit' task.id %}" class="btn btn-outline-primary me-2">
+            <i class="bi bi-pencil"></i> Edit Task
+        </a>
+        <a href="{% url 'web:web_task_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Tasks
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Main Task Information -->
+        <div class="card mb-4 {% if task.priority == 'HIGH' %}priority-high{% elif task.priority == 'MEDIUM' %}priority-medium{% else %}priority-low{% endif %} {% if task.is_overdue and not task.is_completed %}overdue{% endif %}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 d-flex align-items-center">
+                    {% if task.is_completed %}
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    {% else %}
+                        <i class="bi bi-circle me-2"></i>
+                    {% endif %}
+                    {{ task.title }}
+                </h4>
+                <div>
+                    {% if task.is_completed %}
+                        <span class="badge bg-success">Completed</span>
+                    {% elif task.is_overdue %}
+                        <span class="badge bg-danger">Overdue</span>
+                    {% else %}
+                        <span class="badge bg-warning">Pending</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                {% if task.description %}
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">Description</h6>
+                        <p class="card-text">{{ task.description|linebreaks }}</p>
+                    </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-2">Priority</h6>
+                        {% if task.priority == 'HIGH' %}
+                            <span class="badge bg-danger fs-6">{{ task.get_priority_display }}</span>
+                        {% elif task.priority == 'MEDIUM' %}
+                            <span class="badge bg-warning fs-6">{{ task.get_priority_display }}</span>
+                        {% else %}
+                            <span class="badge bg-info fs-6">{{ task.get_priority_display }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-2">Category</h6>
+                        <span class="badge bg-secondary fs-6">{{ task.get_category_display }}</span>
+                    </div>
+                </div>
+
+                {% if task.due_date %}
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2">Due Date</h6>
+                    <p class="mb-0 {% if task.is_overdue and not task.is_completed %}text-danger fw-bold{% endif %}">
+                        <i class="bi bi-calendar-event me-2"></i>
+                        {{ task.due_date|date:"F d, Y" }}
+                        {% if task.due_time %}
+                            at {{ task.due_time|time:"g:i A" }}
+                        {% endif %}
+                        {% if task.is_overdue and not task.is_completed %}
+                            <span class="badge bg-danger ms-2">Overdue</span>
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Task Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-gear"></i> Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn {% if task.is_completed %}btn-outline-warning{% else %}btn-outline-success{% endif %}" 
+                            onclick="toggleTaskComplete({{ task.id }})">
+                        {% if task.is_completed %}
+                            <i class="bi bi-arrow-counterclockwise"></i> Mark Incomplete
+                        {% else %}
+                            <i class="bi bi-check-circle"></i> Mark Complete
+                        {% endif %}
+                    </button>
+                    
+                    <a href="{% url 'web:web_task_edit' task.id %}" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Edit Task
+                    </a>
+                    
+                    <button type="button" class="btn btn-outline-danger" 
+                            onclick="deleteTask({{ task.id }})">
+                        <i class="bi bi-trash"></i> Delete Task
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Task Metadata -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Task Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <strong>Created:</strong><br>
+                        <small class="text-muted">{{ task.created_at|date:"F d, Y \\a\\t g:i A" }}</small>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <strong>Last Updated:</strong><br>
+                        <small class="text-muted">{{ task.updated_at|date:"F d, Y \\a\\t g:i A" }}</small>
+                    </div>
+                </div>
+                {% if task.is_completed and task.completed_at %}
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <strong>Completed:</strong><br>
+                        <small class="text-success">{{ task.completed_at|date:"F d, Y \\a\\t g:i A" }}</small>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="row">
+                    <div class="col-12">
+                        <strong>Task ID:</strong><br>
+                        <small class="text-muted">#{{ task.id }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Quick Stats</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    {% if task.due_date %}
+                    <div class="col-12 mb-3">
+                        <div class="border rounded p-2">
+                            <strong class="{% if task.is_overdue and not task.is_completed %}text-danger{% else %}text-muted{% endif %}">
+                                Days {% if task.is_overdue and not task.is_completed %}Overdue{% else %}Remaining{% endif %}
+                            </strong><br>
+                            {% with days_diff=task.due_date|timeuntil %}
+                                <span class="h5 {% if task.is_overdue and not task.is_completed %}text-danger{% else %}text-primary{% endif %}">
+                                    {% if task.is_overdue and not task.is_completed %}
+                                        {{ task.due_date|timesince }} ago
+                                    {% else %}
+                                        {{ days_diff }}
+                                    {% endif %}
+                                </span>
+                            {% endwith %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="col-12">
+                        <div class="border rounded p-2">
+                            <strong class="text-muted">Task Age</strong><br>
+                            <span class="h6 text-info">{{ task.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Any initialization code here
+});
+
+function toggleTaskComplete(taskId) {
+    if (confirm('Are you sure you want to change the completion status of this task?')) {
+        axios.post(`/web/tasks/${taskId}/toggle/`, {}, {
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        })
+        .then(function (response) {
+            if (response.data.success) {
+                location.reload();
+            }
+        })
+        .catch(function (error) {
+            console.error('Error:', error);
+            alert('Error updating task status');
+        });
+    }
+}
+
+function deleteTask(taskId) {
+    const taskTitle = '{{ task.title|escapejs }}';
+    if (confirm(`Are you sure you want to permanently delete the task "${taskTitle}"? This action cannot be undone.`)) {
+        if (confirm('This will permanently delete the task. Are you absolutely sure?')) {
+            axios.delete(`/web/tasks/${taskId}/`, {
+                headers: {
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(function (response) {
+                if (response.data.success) {
+                    // Redirect to task list
+                    window.location.href = '/web/tasks/';
+                }
+            })
+            .catch(function (error) {
+                console.error('Error:', error);
+                alert('Error deleting task');
+            });
+        }
+    }
+}
+</script>
+{% endblock %}

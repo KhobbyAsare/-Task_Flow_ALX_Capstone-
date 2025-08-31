@@ -78,6 +78,7 @@ WSGI_APPLICATION = 'taskFlow_app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Use PostgreSQL for production
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -88,6 +89,14 @@ DATABASES = {
         'PORT': '45406',
     }
 }
+
+# SQLite configuration (uncomment for local development)
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 # Password validation

@@ -4,6 +4,7 @@ from .views import (
     UserProfileView, 
     EmailLoginView, 
     LogoutView,
+    WebLogoutView,
     UserDataView,
     UserUpdateView
 )
@@ -15,8 +16,11 @@ urlpatterns = [
     # User login with email and password
     path('login/', EmailLoginView.as_view(), name='user-login'),
     
-    # User logout
+    # User logout (API)
     path('logout/', LogoutView.as_view(), name='user-logout'),
+    
+    # Web logout (always redirects)
+    path('web-logout/', WebLogoutView.as_view(), name='web-logout'),
     
     # User profile
     path('profile/', UserProfileView.as_view(), name='user-profile'),

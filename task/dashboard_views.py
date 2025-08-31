@@ -225,12 +225,15 @@ def task_calendar_api(request):
                 'start': task.due_date.isoformat(),
                 'color': color,
                 'extendedProps': {
+                    'id': task.id,
                     'taskId': task.id,
                     'description': task.description or '',
                     'priority': task.priority,
                     'category': task.category,
-                    'completed': task.is_completed,
-                    'overdue': task.is_overdue
+                    'is_completed': task.is_completed,
+                    'is_overdue': task.is_overdue,
+                    'created_at': task.created_at.isoformat(),
+                    'completed_at': task.completed_at.isoformat() if task.completed_at else None
                 }
             })
     
@@ -439,3 +442,51 @@ def register_view(request):
         'page_title': 'Register'
     }
     return render(request, 'registration/register.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def bulk_complete_tasks(request):
+    """
+    Mark multiple tasks as complete via AJAX
+    """
+    task_ids = request.POST.getlist('task_ids')
+    if not task_ids:
+        return JsonResponse({'success': False, 'message': 'No tasks selected'})
+    
+    tasks = Task.objects.filter(id__in=task_ids, user=request.user)
+    updated_count = 0
+    
+    for task in tasks:
+        if not task.is_completed:
+            task.is_completed = True
+            task.completed_at = timezone.now()
+            task.save()
+            updated_count += 1
+    
+    return JsonResponse({
+        'success': True,
+        'message': f'{updated_count} task(s) marked as complete',
+        'updated_count': updated_count
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def bulk_delete_tasks(request):
+    """
+    Delete multiple tasks via AJAX
+    """
+    task_ids = request.POST.getlist('task_ids')
+    if not task_ids:
+        return JsonResponse({'success': False, 'message': 'No tasks selected'})
+    
+    tasks = Task.objects.filter(id__in=task_ids, user=request.user)
+    deleted_count = tasks.count()
+    tasks.delete()
+    
+    return JsonResponse({
+        'success': True,
+        'message': f'{deleted_count} task(s) deleted successfully',
+        'deleted_count': deleted_count
+    })

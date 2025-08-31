@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth.views import LoginView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
+from authentication.web_views import CustomLogoutView
 from task.dashboard_views import register_view
 
 urlpatterns = [
@@ -33,7 +35,12 @@ urlpatterns = [
     path('api/', include('rest_framework.urls')),  # DRF browsable API
     
     # Django built-in authentication for web views
-    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/login/', LoginView.as_view(), name='login'),
+    path('accounts/logout/', CustomLogoutView.as_view(), name='logout'),
+    path('accounts/password_reset/', PasswordResetView.as_view(), name='password_reset'),
+    path('accounts/password_reset/done/', PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('accounts/reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('accounts/reset/done/', PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('accounts/register/', register_view, name='register'),
 ]
 

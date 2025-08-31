@@ -466,13 +466,22 @@ function applyFilters() {
 function showTaskDetails(event) {
     currentTask = event.extendedProps;
     
+    // Debug: Log the current task data
+    console.log('Current task:', currentTask);
+    console.log('Event:', event);
+    
     const modalBody = document.getElementById('taskModalBody');
     const editBtn = document.getElementById('editTaskBtn');
     const toggleBtn = document.getElementById('toggleCompleteBtn');
     const deleteBtn = document.getElementById('deleteTaskBtn');
     
-    // Set edit button link
-    editBtn.href = `/web/tasks/${currentTask.id}/edit/`;
+    // Set edit button link - add null check
+    if (currentTask && currentTask.id) {
+        editBtn.href = `/web/tasks/${currentTask.id}/edit/`;
+    } else {
+        console.error('Task ID is undefined:', currentTask);
+        editBtn.href = '#';
+    }
     
     // Update toggle button text
     toggleBtn.textContent = currentTask.is_completed ? 'Mark Incomplete' : 'Mark Complete';
@@ -556,7 +565,7 @@ function setupQuickCreateForm() {
         const formData = new FormData(this);
         const data = Object.fromEntries(formData);
         
-        axios.post('/tasks/', data, {
+        axios.post('{% url "web:web_task_create" %}', data, {
             headers: {
                 'X-CSRFToken': csrftoken
             }
@@ -587,7 +596,7 @@ function setupQuickCreateForm() {
 function toggleTaskComplete() {
     if (!currentTask) return;
     
-    axios.post(`/tasks/${currentTask.id}/toggle/`, {}, {
+    axios.post(`/web/tasks/${currentTask.id}/toggle/`, {}, {
         headers: {
             'X-CSRFToken': csrftoken
         }
@@ -612,7 +621,7 @@ function deleteTask() {
     if (!currentTask) return;
     
     if (confirm('Are you sure you want to delete this task?')) {
-        axios.delete(`/tasks/${currentTask.id}/`, {
+        axios.delete(`/web/tasks/${currentTask.id}/delete/`, {
             headers: {
                 'X-CSRFToken': csrftoken
             }

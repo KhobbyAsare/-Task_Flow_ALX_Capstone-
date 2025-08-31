@@ -19,7 +19,8 @@ from .views import (
 from .dashboard_views import (
     dashboard_view, task_list_view, task_calendar_view, task_calendar_api,
     task_create_view, task_detail_view, task_edit_view, task_delete_view,
-    toggle_task_complete, task_stats_api, register_view
+    task_delete, toggle_task_complete, task_stats_api, register_view,
+    bulk_complete_tasks, bulk_delete_tasks
 )
 
 app_name = 'task'
@@ -39,6 +40,12 @@ urlpatterns = [
     
     # Web Task actions
     path('web/tasks/<int:task_id>/toggle/', toggle_task_complete, name='web_task_toggle'),
+    
+    # Additional URL patterns for JavaScript AJAX calls (without 'web/' prefix)
+    path('tasks/<int:task_id>/', task_delete, name='task_ajax_delete'),
+    path('tasks/<int:task_id>/toggle/', toggle_task_complete, name='task_ajax_toggle'),
+    path('tasks/bulk/complete/', bulk_complete_tasks, name='bulk_complete_tasks'),
+    path('tasks/bulk/delete/', bulk_delete_tasks, name='bulk_delete_tasks'),
     
     # Web API endpoints
     path('web/tasks/calendar/api/', task_calendar_api, name='web_task_calendar_api'),
