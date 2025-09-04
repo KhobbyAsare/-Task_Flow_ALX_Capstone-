@@ -4,9 +4,6 @@ from django.utils import timezone
 
 
 class Category(models.Model):
-    """
-    Custom category model for user-defined task categories
-    """
     name = models.CharField(max_length=50, help_text="Category name")
     color = models.CharField(
         max_length=7, 
@@ -28,7 +25,6 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'Custom Category'
         verbose_name_plural = 'Custom Categories'
-        # Ensure user cannot create duplicate category names
         unique_together = ['name', 'user']
         ordering = ['name']
     
@@ -36,7 +32,6 @@ class Category(models.Model):
         return f"{self.name} - {self.user.username}"
     
     def clean(self):
-        # Convert name to title case for consistency
         if self.name:
             self.name = self.name.title()
     
@@ -46,9 +41,6 @@ class Category(models.Model):
 
 
 class Task(models.Model):
-    """
-    Task model for task management system
-    """
     PRIORITY_CHOICES = [
         ('HIGH', 'High'),
         ('MEDIUM', 'Medium'),
@@ -75,7 +67,6 @@ class Task(models.Model):
         default='MEDIUM',
         help_text="Task priority level"
     )
-    # Default system category (optional)
     category = models.CharField(
         max_length=15,
         choices=CATEGORY_CHOICES,
@@ -83,7 +74,6 @@ class Task(models.Model):
         null=True,
         help_text="Default system category"
     )
-    # Custom user category (optional)
     custom_category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -111,7 +101,6 @@ class Task(models.Model):
         return f"{self.title} - {self.user.username}"
     
     def save(self, *args, **kwargs):
-        """Override save to set completed_at timestamp"""
         if self.is_completed and not self.completed_at:
             self.completed_at = timezone.now()
         elif not self.is_completed:
@@ -120,14 +109,12 @@ class Task(models.Model):
     
     @property
     def is_overdue(self):
-        """Check if task is overdue"""
         if self.due_date and not self.is_completed:
             return timezone.now() > self.due_date
         return False
     
     @property
     def days_until_due(self):
-        """Calculate days until due date"""
         if self.due_date:
             delta = self.due_date - timezone.now()
             return delta.days
@@ -135,7 +122,6 @@ class Task(models.Model):
     
     @property
     def effective_category(self):
-        """Get the effective category (custom takes precedence over default)"""
         if self.custom_category:
             return {
                 'type': 'custom',
@@ -157,6 +143,5 @@ class Task(models.Model):
             }
     
     def clean(self):
-        # Ensure at least one category is set (default or custom)
         if not self.category and not self.custom_category:
             self.category = 'OTHER'

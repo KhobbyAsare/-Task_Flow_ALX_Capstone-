@@ -18,24 +18,16 @@ from .serializers import (
 
 
 class IsTaskOwner(IsAuthenticated):
-    """
-    Custom permission to only allow owners of a task to view/edit it.
-    """
     def has_object_permission(self, request, view, obj):
-        # Permission is only allowed to the owner of the task
         return obj.user == request.user
 
 
 class TaskCreateAPIView(generics.CreateAPIView):
-    """
-    Create a new task for the authenticated user
-    """
     queryset = Task.objects.all()
     serializer_class = TaskCreateSerializer
     permission_classes = [IsAuthenticated]
     
     def perform_create(self, serializer):
-        """Save the task with the current user as owner"""
         serializer.save(user=self.request.user)
     
     def create(self, request, *args, **kwargs):
@@ -43,7 +35,6 @@ class TaskCreateAPIView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         task = serializer.save(user=request.user)
         
-        # Return detailed task information
         response_serializer = TaskDetailSerializer(task)
         return Response(
             {
@@ -55,9 +46,6 @@ class TaskCreateAPIView(generics.CreateAPIView):
 
 
 class TaskListAPIView(generics.ListAPIView):
-    """
-    List all tasks for the authenticated user with filtering options
-    """
     serializer_class = TaskListSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -67,10 +55,7 @@ class TaskListAPIView(generics.ListAPIView):
     ordering = ['-created_at']
     
     def get_queryset(self):
-        """Return tasks only for the authenticated user"""
         queryset = Task.objects.filter(user=self.request.user)
-        
-        # Additional filtering options
         status_filter = self.request.query_params.get('status', None)
         due_filter = self.request.query_params.get('due', None)
         
@@ -112,16 +97,12 @@ class TaskListAPIView(generics.ListAPIView):
 
 
 class TaskRetrieveAPIView(generics.RetrieveAPIView):
-    """
-    Retrieve a specific task for the authenticated user
-    """
     queryset = Task.objects.all()
     serializer_class = TaskDetailSerializer
     permission_classes = [IsTaskOwner]
     lookup_field = 'id'
     
     def get_queryset(self):
-        """Return tasks only for the authenticated user"""
         return Task.objects.filter(user=self.request.user)
     
     def retrieve(self, request, *args, **kwargs):
