@@ -22,6 +22,8 @@ from django.contrib.auth.views import LoginView, PasswordResetView, PasswordRese
 from authentication.web_views import CustomLogoutView
 from task.dashboard_views import register_view
 
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     
@@ -42,6 +44,11 @@ urlpatterns = [
     path('accounts/reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('accounts/reset/done/', PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('accounts/register/', register_view, name='register'),
+
+    # Spectacular Paths
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
 
 # Serve media files during development

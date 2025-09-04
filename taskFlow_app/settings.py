@@ -10,6 +10,7 @@ INSTALLED_APPS = [
     'task',
     'authentication',
     'rest_framework',
+    'drf_spectacular',
     'rest_framework.authtoken',
     'django_filters',
     'django.contrib.admin',
@@ -101,7 +102,8 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20
+    'PAGE_SIZE': 20,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 LOGIN_URL = '/accounts/login/'
@@ -116,4 +118,13 @@ MESSAGE_TAGS = {
     messages.SUCCESS: 'success',
     messages.WARNING: 'warning',
     messages.ERROR: 'danger',
+}
+
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Task Flow Management API',
+    'DESCRIPTION': 'API for Task Flow Management, a web-based task management system.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
 }
